@@ -7,18 +7,21 @@ from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow
 from PyQt5 import QtGui
 import PyQt5
 
+from PyQt5.QtWidgets import QDesktopWidget,QApplication
+
 
 class Example(QWidget):
-    def __init__(self):
+    def __init__(self, win_wid=0, win_hei=0):
         super().__init__()
 
         self.text = "asdasdas"
 
-        self.wid = 150
-        self.hig = 150
+        self.wid = self.hig = 150
+
+        shape = [200, 200, self.wid, self.hig]
 
         self.setWindowTitle('Example') # имя окна
-        self.setGeometry(200, 200, self.wid, self.hig) # рамки
+        self.setGeometry(*shape) # рамки
         self.setAttribute(Qt.WA_TranslucentBackground, True) # прозрачные внутренности окна
         self.setWindowFlags(Qt.FramelessWindowHint) # без сноски с именем окна
 
@@ -54,33 +57,80 @@ class Example(QWidget):
 
         painter.setPen(QtGui.QPen(Qt.white, size)) # настройки "кисти"
         painter.drawEllipse(pos, self.wid/2-size*2, self.hig/2-size*2) # форма окна
-        #print(self.pos())
 
-        #qp = QPainter()
-        #qp.begin(self)
         self.drawText(event, painter)
-        #qp.end()
 
-class mywindow(QMainWindow):
- 
-    def __init__(self):
-        super(mywindow, self).__init__()
-        self.ui = Example()
-        self.ui.setupUi(self)
-        
-        self.ui.label.setFont(
-            QtGui.QFont('SansSerif', 30)
-        )
- 
-        self.ui.label.setGeometry(
-            QtCore.QRect(0, 0, 50, 50)
-        ) # изменить геометрию ярлыка'''
+class Draw(QWidget):
+    def __init__(self, win_wid=0, win_hei=0):
+        super().__init__()
 
+        self.wid = self.hig = 150
+
+        shape = [200, 200, self.wid, self.hig]
+
+        col = QColor(200, 0, 0)
+        QColor.setAlpha(col, 100)
+
+        #p = self.palette()
+        #p.setColor(self.backgroundRole(), col) #
+        #self.setPalette(p)
+
+        self.setWindowTitle('Example') # имя окна
+        self.setGeometry(*shape) # рамки
+        self.set_transparency(not False)
+
+        #self.setAutoFillBackground(False)
+        #self.setAttribute(Qt.WA_NoSystemBackground, False)
+        #self.setAttribute(Qt.WA_TranslucentBackground, True) # прозрачные внутренности окна
+        self.setWindowFlags(Qt.FramelessWindowHint) # без сноски с именем окна
+
+        self.press = False # нажато ли окно
+        self.last_pos = QPoint(0, 0) # window pos
+
+    def set_transparency(self, enabled):
+        if enabled:
+            self.setAutoFillBackground(not False)
+        else:
+            self.setAttribute(Qt.WA_NoSystemBackground, False)
+
+        self.setAttribute(Qt.WA_TranslucentBackground, enabled)
+        self.repaint()
+
+
+    def mouseMoveEvent(self, event):
+        if self.press:
+            self.move(event.globalPos() - self.last_pos)
+        #print("gg")
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.press = True
+        print("df")
+
+        self.last_pos = event.pos()
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.press = False
+
+    def paintEvent(self, event: QtGui.QPaintEvent):
+        painter = QtGui.QPainter(self)
+        size = 50
+        #pos = PyQt5.QtCore.QPoint(self.wid//2, self.hig//2)
+        painter.setPen(QtGui.QPen(Qt.white, size)) # настройки "кисти"
+        painter.drawRect(self.rect())#, self.wid/2-size, self.hig/2-size) # форма окна
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    q = QDesktopWidget().availableGeometry()
+    wid = q.width()
+    hei = q.height()
+    #print(f"{wid=}")
+    #print(f"{hei=}")
 
-    wind = Example()
+    #app = QApplication(sys.argv)
+
+    wind = Draw()
     #print(Example)
     wind.show()
 
